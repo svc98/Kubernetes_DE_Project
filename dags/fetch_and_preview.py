@@ -1,7 +1,3 @@
-import json
-
-import requests
-import pandas as pd
 from airflow import DAG
 from datetime import datetime, timedelta
 from airflow.operators.python import PythonOperator
@@ -88,7 +84,7 @@ default_args = {
 dag = DAG(
     'sales_data_preview',
     default_args=default_args,
-    schedule=timedelta(days=1)
+    schedule="@daily"
 )
 
 t1 = PythonOperator(
