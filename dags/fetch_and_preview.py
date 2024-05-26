@@ -2,6 +2,7 @@ from airflow import DAG
 from datetime import datetime
 from airflow.operators.python import PythonOperator
 
+
 def get_data(**kwargs):
     import requests
     import pandas as pd
@@ -12,12 +13,13 @@ def get_data(**kwargs):
     if response.status_code == 200:
         df = pd.read_csv(url, header=None, names=['Category', 'Price', 'Quantity'])
 
-        #convert dataframe to json string from xcom
+        # Convert DF to JSON string from XCOM
         json_data = df.to_json(orient='records')
 
         kwargs['ti'].xcom_push(key='data', value=json_data)
     else:
         raise Exception(f'Failed to get data, HTTP status code: {response.status_code}')
+
 
 def preview_data(**kwargs):
     import pandas as pd
@@ -30,15 +32,15 @@ def preview_data(**kwargs):
     else:
         raise ValueError('No data received from XCom')
 
-    # Create Dataframe from JSON data
+    # Create DF from JSON data
     df = pd.DataFrame(output_data)
 
-    #Compute total sales
+    # Compute total sales
     df['Total'] = df['Price'] * df['Quantity']
 
     df = df.groupby('Category', as_index=False).agg({'Quantity': 'sum', 'Total': 'sum'})
 
-    #sort by total sales
+    # Sort by total sales
     df = df.sort_values(by='Total', ascending=False)
 
     print(df[['Category', 'Total']].head(20))
